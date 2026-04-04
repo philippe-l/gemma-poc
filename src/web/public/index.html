@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemma 4 — POC Capabilities</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0a0a0f;color:#e0e0e8;font-family:'JetBrains Mono',monospace;font-size:13px}
+    .header{border-bottom:1px solid #1a1a2e;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#0f0f1a,#0a0a0f)}
+    .hdr-left{display:flex;align-items:center;gap:12px}
+    .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff}
+    .hdr-title{font-size:14px;font-weight:600;color:#f0f0f5}
+    .hdr-sub{font-size:10px;color:#666680;margin-top:2px}
+    .status{display:flex;align-items:center;gap:8px;font-size:11px;color:#888}
+    .dot{width:8px;height:8px;border-radius:50%;background:#555}
+    .dot.ok{background:#34a853}.dot.err{background:#ea4335}
+    .layout{display:flex;height:calc(100vh - 63px)}
+    .sidebar{width:210px;border-right:1px solid #1a1a2e;padding:10px 8px;background:#0c0c14;flex-shrink:0;overflow-y:auto}
+    .slabel{font-size:9px;color:#444460;padding:4px 12px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+    .nav-btn{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;font-size:12px;text-align:left;background:0;color:#888898;margin-bottom:1px;transition:.15s}
+    .nav-btn:hover{background:#1a1a2e;color:#c0c0d0}
+    .nav-btn.active{background:linear-gradient(135deg,rgba(66,133,244,.15),rgba(52,168,83,.1));color:#e0e0f0;font-weight:600}
+    .nav-icon{font-size:15px}
+    .info-box{margin-top:16px;padding:10px;border-radius:7px;background:#111120;border:1px solid #1a1a2e;font-size:10px;color:#666680;line-height:1.6}
+    .info-box b{color:#4285f4;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+    .main{flex:1;padding:20px 24px;overflow-y:auto}
+    .demo-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .demo-icon{font-size:22px}.demo-title{font-size:18px;font-weight:700;color:#f0f0f5;letter-spacing:-.02em}
+    .demo-desc{font-size:12px;color:#777790;line-height:1.5;margin-bottom:6px}
+    .demo-how{font-size:11px;color:#999;background:#ffffff06;border:1px solid #1a1a2e;border-radius:7px;padding:10px 12px;margin-bottom:16px;line-height:1.6}
+    .demo-how code{color:#4285f4;font-size:10px}
+    .lbl{font-size:9px;color:#555570;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:5px}
+    textarea{width:100%;background:#111120;border:1px solid #1e1e35;border-radius:9px;padding:14px;color:#d0d0dd;font-size:12px;font-family:inherit;resize:vertical;line-height:1.6;outline:0}
+    textarea:focus{border-color:#4285f4}
+    .actions{display:flex;gap:10px;margin:14px 0 18px}
+    .btn{padding:9px 24px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:.2s}
+    .btn-run{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff}
+    .btn-run:disabled{background:#333;cursor:wait}
+    .btn-run:hover:not(:disabled){filter:brightness(1.1)}
+    .result-box{background:#111120;border:1px solid #1e1e35;border-radius:9px;padding:18px;min-height:60px}
+    .result-box.json{background:#0d1117;border-color:#1e3a2e}
+    pre.result{font-size:12px;color:#d0d0dd;margin:0;line-height:1.6;white-space:pre-wrap;word-break:break-word;font-family:inherit}
+    pre.result.json{color:#7ee787}
+    .stats-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+    .stats{font-size:10px;color:#4285f4;font-weight:500}
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #4285f4;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty{margin-top:30px;text-align:center;padding:30px;border:1px dashed #1e1e35;border-radius:10px}
+    .empty-icon{font-size:28px;margin-bottom:10px}.empty-text{font-size:13px;color:#555570}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hdr-left">
+    <div class="logo">G</div>
+    <div><div class="hdr-title">Gemma 4 — POC</div><div class="hdr-sub">6 capacités d'un LLM local</div></div>
+  </div>
+  <div class="status"><div class="dot" id="dot"></div><span id="stxt">Connexion...</span></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="slabel">Capacités</div>
+    <div id="nav"></div>
+    <div class="info-box">
+      <b>Comment ça marche ?</b>
+      Chaque démo envoie un prompt à Gemma via Ollama (localhost:11434). Le modèle tourne 100% en local — aucune donnée ne sort de cette machine.
+    </div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<script>
+const DEMOS = [
+  {
+    id:'generation', label:'Génération', icon:'✍️',
+    desc:'Le LLM crée du contenu original à partir d\'une consigne.',
+    how:'Le paramètre <code>temperature</code> contrôle la créativité : 0.1 = précis et prévisible, 0.9 = créatif et varié.',
+    system:'Tu es un assistant polyvalent. Réponds en français, de manière concise (3-5 phrases).',
+    input:'Explique le concept de "dette technique" en développement logiciel à quelqu\'un qui n\'est pas développeur.',
+  },
+  {
+    id:'summary', label:'Résumé', icon:'📋',
+    desc:'Le LLM condense un texte long en conservant l\'information essentielle.',
+    how:'On donne un texte + une consigne de longueur. Le LLM identifie les points clés et reformule.',
+    system:'Tu résumes fidèlement et de manière concise. 3 phrases maximum.',
+    input:`L'intelligence artificielle générative a connu une croissance explosive depuis 2022. Les modèles de langage comme GPT, Claude et Gemini sont utilisés par des millions de personnes. En parallèle, les modèles open source comme Llama, Mistral et Gemma permettent de déployer l'IA sur ses propres serveurs, sans envoyer de données dans le cloud. Cette approche répond aux exigences de confidentialité de secteurs comme la santé et la finance. Cependant, faire tourner ces modèles en local nécessite des ressources matérielles importantes. Les techniques de quantification permettent de réduire ces besoins, au prix d'une légère baisse de qualité.`,
+  },
+  {
+    id:'extraction', label:'Extraction', icon:'🔍',
+    desc:'Le LLM transforme du texte libre en données structurées (JSON).',
+    how:'On demande au modèle de répondre en JSON avec <code>format: "json"</code>. On peut fournir un schéma pour guider la structure.',
+    system:'Extrais les informations en JSON valide. Pas de commentaire, que du JSON.',
+    input:`Facture n° FA-2026-0847 du 28 mars 2026. Client : Martin & Fils SARL, 42 avenue Victor Hugo, 69003 Lyon. Montant HT : 3 200,00 €. TVA 20% : 640,00 €. Total TTC : 3 840,00 €. Échéance : 30 avril 2026. Objet : Refonte du site e-commerce, phase 2.`,
+    format:'json',
+  },
+  {
+    id:'classification', label:'Classification', icon:'🏷️',
+    desc:'Le LLM attribue une catégorie à un texte parmi une liste définie.',
+    how:'On fournit les catégories possibles dans le prompt système. Le modèle retourne son choix + un score de confiance.',
+    system:'Classifie le texte parmi : [positif, négatif, neutre, question, spam]. Réponds en JSON : {"label":"...","confidence":0.XX,"reason":"..."}',
+    input:`Le produit est correct mais la livraison a pris 3 semaines au lieu de 5 jours. L'emballage était un peu abîmé mais le contenu intact.`,
+    format:'json',
+  },
+  {
+    id:'translation', label:'Traduction', icon:'🌍',
+    desc:'Le LLM traduit entre 140+ langues en conservant le ton et le style.',
+    how:'Gemma 4 est multilingue nativement. On peut traduire depuis/vers n\'importe quelle langue supportée.',
+    system:'Tu es traducteur professionnel. Retourne uniquement la traduction, sans commentaire.',
+    input:`Traduire en anglais :\n\nL'open source transforme l'industrie du logiciel. En partageant le code librement, les développeurs du monde entier collaborent pour créer des outils plus fiables et plus innovants que ce qu'une seule entreprise pourrait produire.`,
+  },
+  {
+    id:'function', label:'Function Calling', icon:'⚡',
+    desc:'Le LLM analyse une demande et décide quelles fonctions appeler et avec quels paramètres.',
+    how:'On décrit les fonctions disponibles (nom, paramètres). Le LLM décompose la demande de l\'utilisateur en appels structurés. C\'est la base des <b>agents IA</b>.',
+    system:`Tu es un assistant. Décompose la demande en appels de fonctions. Fonctions disponibles : getWeather(city), searchWeb(query), sendEmail(to, subject, body), createEvent(title, date, time). Réponds en JSON : {"steps":[{"function":"...","params":{...},"reason":"..."}]}`,
+    input:'Regarde la météo à Lyon demain, et si il fait beau, envoie un email à pierre@example.com pour proposer un déjeuner en terrasse mercredi à 12h30.',
+    format:'json',
+  },
+];
+
+let active = 'generation', loading = false;
+
+async function checkStatus(){
+  try{
+    const r=await fetch('/api/status');const d=await r.json();
+    document.getElementById('dot').className='dot '+(d.ok?'ok':'err');
+    document.getElementById('stxt').textContent=d.ok?`Ollama OK • ${d.models.length} modèle(s)`:'Ollama indisponible';
+  }catch{
+    document.getElementById('dot').className='dot err';
+    document.getElementById('stxt').textContent='Serveur non connecté';
+  }
+}
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=DEMOS.map(d=>`
+    <button class="nav-btn ${d.id===active?'active':''}" onclick="sel('${d.id}')">
+      <span class="nav-icon">${d.icon}</span><span>${d.label}</span>
+    </button>`).join('');
+}
+
+function renderMain(result,stats){
+  const d=DEMOS.find(x=>x.id===active);
+  const isJ=result&&(result.trim().startsWith('{')||result.trim().startsWith('['));
+  let fmt=result||'';
+  if(isJ)try{fmt=JSON.stringify(JSON.parse(result),null,2)}catch{}
+
+  let rhtml='';
+  if(loading){
+    rhtml=`<div class="stats-row"><span class="lbl">Résultat</span></div>
+      <div class="result-box"><span class="spinner"></span><span style="color:#666">Traitement...</span></div>`;
+  }else if(result){
+    rhtml=`<div class="stats-row"><span class="lbl">Résultat</span>
+      ${stats?`<span class="stats">${stats.time}ms • ${stats.tokens} tokens • ${stats.model}</span>`:''}</div>
+      <div class="result-box ${isJ?'json':''}"><pre class="result ${isJ?'json':''}">${esc(fmt)}</pre></div>`;
+  }else{
+    rhtml=`<div class="empty"><div class="empty-icon">${d.icon}</div>
+      <div class="empty-text">Clique sur <b style="color:#4285f4">▶ Exécuter</b> pour tester cette capacité</div></div>`;
+  }
+
+  document.getElementById('main').innerHTML=`
+    <div class="demo-row"><span class="demo-icon">${d.icon}</span><h2 class="demo-title">${d.label}</h2></div>
+    <p class="demo-desc">${d.desc}</p>
+    <div class="demo-how">💡 ${d.how}</div>
+    <div class="lbl">Entrée (modifiable)</div>
+    <textarea id="inp" rows="6">${d.input}</textarea>
+    <div class="actions"><button class="btn btn-run" onclick="run()" ${loading?'disabled':''}>${loading?'⏳ ...':'▶ Exécuter'}</button></div>
+    ${rhtml}`;
+}
+
+function sel(id){active=id;renderNav();renderMain()}
+
+async function run(){
+  const d=DEMOS.find(x=>x.id===active);
+  const input=document.getElementById('inp').value;
+  loading=true;renderMain();
+  try{
+    const body={prompt:input,system:d.system};
+    if(d.format)body.format=d.format;
+    const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await r.json();
+    loading=false;renderMain(data.text||data.error,data.stats);
+  }catch(e){loading=false;renderMain('❌ '+e.message+'\n\nVérifie que Ollama est lancé (ollama serve) et que le modèle est téléchargé (ollama pull gemma4).');}
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+checkStatus();renderNav();renderMain();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "gemma-poc",
+  "version": "1.0.0",
+  "description": "POC démontrant les capacités de Gemma 4 via Ollama",
+  "type": "module",
+  "scripts": {
+    "demo": "node src/run-all.js",
+    "demo:generation": "node src/demos/generation.js",
+    "demo:summary": "node src/demos/summary.js",
+    "demo:extraction": "node src/demos/extraction.js",
+    "demo:classification": "node src/demos/classification.js",
+    "demo:translation": "node src/demos/translation.js",
+    "demo:function-calling": "node src/demos/function-calling.js",
+    "web": "node src/web/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["gemma", "ollama", "llm", "ai", "poc"],
+  "license": "MIT"
+}
