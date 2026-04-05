@@ -25,6 +25,7 @@ services:
       - .:/app
     environment:
       - OLLAMA_HOST=http://ollama:11434
+      - GEMMA_MODEL=gemma3:4b
       - PORT=3000
     command: sh -c "npm install && npm run web"
     depends_on:

@@ -31,8 +31,7 @@ Ce POC démontre **6 capacités fondamentales** d'un LLM local :
 
 ### Prérequis
 
-- [Node.js](https://nodejs.org/) >= 18
-- [Ollama](https://ollama.com/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) avec **au moins 8 Go de RAM** alloués (Settings → Resources → Memory)
 
 ### Installation
 
@@ -40,6 +39,23 @@ Ce POC démontre **6 capacités fondamentales** d'un LLM local :
 git clone https://github.com/VOTRE_USER/gemma-poc.git
 cd gemma-poc
 
+# 1. Lancer les services (Ollama + serveur web)
+docker compose up -d
+
+# 2. Télécharger le modèle (variante légère, ~2.5 Go, tourne sur CPU)
+docker compose exec ollama ollama pull gemma3:4b
+
+# 3. Ouvrir → http://localhost:3000
+```
+
+> 💡 Pour utiliser un autre modèle : modifier `GEMMA_MODEL` dans `docker-compose.yml`.
+> Le modèle `gemma4` (9.9 Go) nécessite au moins 12 Go de RAM alloués à Docker.
+
+### Sans Docker (installation manuelle)
+
+Prérequis : [Node.js](https://nodejs.org/) >= 18, [Ollama](https://ollama.com/)
+
+```bash
 # Tout installer (Ollama + Gemma + dépendances)
 bash scripts/setup.sh
 
@@ -48,14 +64,6 @@ npm run demo
 
 # Ou lancer l'interface web → http://localhost:3000
 npm run web
-```
-
-### Avec Docker
-
-```bash
-docker compose up -d
-docker compose exec ollama ollama pull gemma4
-# → http://localhost:3000
 ```
 
 ---
